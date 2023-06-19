@@ -1,7 +1,7 @@
       subroutine forward_model_mineos(
      1 phvel_all,grvel_all,lorder_all,attn_all,per_all,
      1 jcomin,epsin,wgravin,lminin,lmaxin,wminin,wmaxin,nminin,nmaxin,
-     1 model_path,outputs_dir,premnm)
+     1 model_file,outputs_dir,premnm)
 
       implicit real*8(a-h,o-z)
 
@@ -12,7 +12,7 @@
       integer*4 wk
       parameter (wk=3000)
 
-      character*256  model_path,outputs_dir
+      character*256  model_file,outputs_dir
       character*256  out_plain_file,out_bin_file
       character*256  dbase_name,eigenasc,kernelasc
       real*4      rad(mk)
