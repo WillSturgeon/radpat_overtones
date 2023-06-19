@@ -36,4 +36,5 @@ e.g.
 ./radpat_overtones prem_noocean 3 0 271 202201281114A 70 /data/will/rad_pat/
 ```
 
+The figure below shows the example above for the angular orders 028,043,061,098,202,271, as in the plot_radpat.m
 ![](example_figure.png)
