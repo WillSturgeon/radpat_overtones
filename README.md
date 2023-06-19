@@ -30,3 +30,10 @@ n = radial order. 0=fundamental mode, 1+ = overtone number
 l = angular order
 envam = input event code, e.g. 202201281114A from IRIS.
 outdir_directory = path to store output file
+
+e.g.
+```bash
+./radpat_overtones prem_noocean 3 0 271 202201281114A 70 /data/will/rad_pat/
+```
+
+![](example_figure.png)
