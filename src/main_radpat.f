@@ -122,7 +122,7 @@ c      real*4 eventt(401501),network(401501),station(401501),az_earth(401501)
       character*7 evformatLETTER(1)
       character*16 short_CMTname(max_events)
       logical foundevent
-      character*50 input_model
+      character*50 input_model,outdir
       character*1 jcominarg,nmaxinarg
       character*3 lmaxinarg
       character*10 azep_inarg
@@ -132,7 +132,7 @@ c-------------------------------------------------------
 c-------------------- inputs ---------------------------
 c-- example: ./rapid_mineos prem_noocean 3 0 098 201709080449A 70
 c First, make sure the right number of inputs have been provided
-      IF(COMMAND_ARGUMENT_COUNT().NE.6)THEN
+      IF(COMMAND_ARGUMENT_COUNT().NE.7)THEN
       WRITE(*,*)'ERROR, INCORRECT N. INPUT ARGUMENTS, STOPPING'
       STOP
       ENDIF
@@ -143,6 +143,7 @@ c First, make sure the right number of inputs have been provided
       CALL GET_COMMAND_ARGUMENT(4,lmaxinarg)
       CALL GET_COMMAND_ARGUMENT(5,evnam)
       CALL GET_COMMAND_ARGUMENT(6,azep_inarg)
+      CALL GET_COMMAND_ARGUMENT(7,outdir)
 
       read(jcominarg,*)jcomin
       read(nmaxinarg,*)nmaxin
@@ -154,7 +155,8 @@ c First, make sure the right number of inputs have been provided
       write(*,*)'nmax= ',nmaxin
       write(*,*)'lmax = ',lmaxin
       write(*,*)'evnam = ',evnam
-      write(*,*)'input azimuth',azep_in
+      write(*,*)'input azimuth = ',azep_in
+      write(*,*)'output directory =',outdir
 
 c-----  load input model
 
@@ -202,7 +204,7 @@ c           write(*,*)'U --- ',i, buf(i)
       endif
 c-----------------------------------------------------------------------
 cc open new GCMT file and read (WS)
-      open(201,file='/home/will/Documents/rapid_mineos/jan76_dec17.ndk')
+      open(201,file='../data/jan76_dec17.ndk')
        do i=1,max_events
 c        do i=1,20
          read(201,504)hypo(i),datQQ(i),datYY(i),slash(i),datMM(i),
@@ -1203,7 +1205,7 @@ c------- for the azimuth from source to receiver
 
 c------ write final file output 
 
-      write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') "/data/will/rad_pat/",
+      write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
      1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
      1 lmaxin,".txt"
 
