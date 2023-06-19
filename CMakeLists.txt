@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(rapid_mineos Fortran)
+project(radpat_overtones Fortran)
 cmake_policy(SET CMP0097 NEW)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
