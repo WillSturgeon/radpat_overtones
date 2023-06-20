@@ -66,8 +66,10 @@ c---- declarations for rad_pat
       complex part2,MEs(360),part2_az,MEs_az
       real*8 X(40),Y(40),U,V,B(40),C(40),D(40)
       real*8 Ueigen_sdpth,Udoteigen_sdpth,Veigen_sdpth,Vdoteigen_sdpth
+      real*8 Weigen_sdpth,Wdoteigen_sdpth
       real*8, dimension(:), allocatable :: Ueigen,Udoteigen   
       real*8, dimension(:), allocatable :: Veigen,Vdoteigen
+      real*8, dimension(:), allocatable :: Weigen,Wdoteigen
 
 c-----------------------------------------------------------------------
 c---- declarations for model inputs etc
@@ -197,11 +199,6 @@ c-----------------------------------------------------------------------
      1 wgravin,lminin,lmaxin,wminin,wmaxin,nminin,nmaxin,
      1 model_file,outputs_dir,premnm)
 
-      if (jcomin==3) then
-      do i=1,premnm
-c           write(*,*)'U --- ',i, buf(i)
-      enddo
-      endif
 c-----------------------------------------------------------------------
 cc open new GCMT file and read (WS)
       open(201,file='../data/jan76_dec17.ndk')
@@ -1063,9 +1060,7 @@ c I had to multiply by -1 so that is matches the modes in the mode files....
             Ueigen=buf(1:premnm)*(-1)
             Udoteigen=buf(premnm+1:premnm*2)*(-1)
             Veigen=buf(premnm*2+1:premnm*3)*(-1)
-c     1             *(lmaxin*(lmaxin+1))**(0.5)
             Vdoteigen=buf(premnm*3+1:premnm*4)*(-1)
-c     1                *(lmaxin*(lmaxin+1))**(0.5)
 c            Peigen=buf(premnm*5)*(-1)
 c            Pdoteigen=buf(premnm*6)*(-1)
 c            write(*,*)'U --- ',Ueigen
@@ -1075,10 +1070,8 @@ c            write(*,*)'Vdot --- ',Vdoteigen
 c            write(*,*)'P --- ',Peigen
 c            write(*,*)'Pdot --- ',Pdoteigen
       elseif (jcomin==2) then
-            Weigen=(buf(premnm)*(-1))
-c     1             *(lmaxin*(lmaxin+1))**(0.5)
-            Wdoteigen=(buf(premnm*2)*(-1))
-c     1               *(lmaxin*(lmaxin+1))**(0.5)
+            Weigen=buf(1:premnm)*(-1)
+            Wdoteigen=buf(premnm+1:premnm*2)*(-1)
 c            write(*,*)'W --- ',Weigen
 c            write(*,*)"Wdot --- ",Wdoteigen
       end if
@@ -1095,6 +1088,7 @@ c---- check is sdpth already exists in input model
       do j=1,premnm
       if (6371000-(sdpth*1000) == prrad(j)) then
       write(*,*) 'source depth exists in input model'
+      if (jcomin==3) then 
       Ueigen_sdpth=Ueigen(j)
       Udoteigen_sdpth=Udoteigen(j)
       Veigen_sdpth=Veigen(j)
@@ -1103,12 +1097,18 @@ c---- check is sdpth already exists in input model
       write(*,*) '1.Udoteigen_sdpth ',Udoteigen_sdpth
       write(*,*) '1.Veigen_sdpth ',Veigen_sdpth
       write(*,*) '1.Vdoteigen_sdpth ',Vdoteigen_sdpth
+      elseif (jcomin==2) then
+      Weigen_sdpth=Weigen(j)
+      Wdoteigen_sdpth=Wdoteigen(j)
+      write(*,*) '1.Weigen_sdpth ',Weigen_sdpth
+      write(*,*) '1.Wdoteigen_sdpth ',Wdoteigen_sdpth
+      endif
       goto 11
       else
 c      write(*,*)'need to interpolate'
       endif 
       enddo
-      stop
+
 c else perform linear interepolation between the layers above and below
       do i=1,premnm
         if (prrad(i)<=(6371000-(sdpth*1000))) then
@@ -1117,6 +1117,7 @@ c        write(*,*) (prrad(i)), 6371000-(sdpth*1000)
         endif
       enddo
 
+      if (jcomin==3) then
        Ueigen_sdpth=(Ueigen(nlines)*(prrad(nlines+1)
      1 -(6371000-(sdpth*1000)))+(Ueigen(nlines+1)
      1 *((6371000-(sdpth*1000))-prrad(nlines))))/
@@ -1141,6 +1142,21 @@ c        write(*,*) (prrad(i)), 6371000-(sdpth*1000)
       write(*,*)'2.Udoteigen_spdth ',Udoteigen_sdpth
       write(*,*)'2.Veigen_spdth ',Veigen_sdpth
       write(*,*)'2.Vdoteigen_spdth ',Vdoteigen_sdpth
+      
+      elseif (jcomin==2) then
+        Weigen_sdpth=(Weigen(nlines)*(prrad(nlines+1)
+     1 -(6371000-(sdpth*1000)))+(Weigen(nlines+1)
+     1 *((6371000-(sdpth*1000))-prrad(nlines))))/
+     1 (prrad(nlines+1)-prrad(nlines))
+
+       Wdoteigen_sdpth=(Wdoteigen(nlines)*(prrad(nlines+1)
+     1 -(6371000-(sdpth*1000)))+(Wdoteigen(nlines+1)
+     1 *((6371000-(sdpth*1000))-prrad(nlines))))/
+     1 (prrad(nlines+1)-prrad(nlines))
+
+      write(*,*)'2.Weigen_spdth ',Weigen_sdpth
+      write(*,*)'2.Wdoteigen_spdth ',Wdoteigen_sdpth
+      endif
 
    11 continue
 
@@ -1156,6 +1172,7 @@ C Moment tensor components !why -30???? ask Ana.
       enddo
 
 c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
+      if (jcomin==3) then
       do i=1,360
 
       azep_i(i)=i*pi/180.
@@ -1203,7 +1220,7 @@ c------- for the azimuth from source to receiver
       write(*,*) 'part3_az ',part3_az
       write(*,*) 'MEs_az ',abs(MEs_az)
 
-c------ write final file output 
+c------ write final file output Rayleigh
 
       write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
      1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
@@ -1217,5 +1234,51 @@ c------ write final file output
        write(1,*) (pi-azep)*180/pi, abs(MEs(i))*1000
       enddo
       close(1)
+
+      elseif (jcomin==2) then
+
+c --------- for Love waves
+c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
+      do i=1,360
+
+      azep_i(i)=i*pi/180.
+      azep=azep_i(i)
+
+      part1=-cmplx(0,((lambda)*
+     1 ((fmom(4)*sin(pi-azep))-(fmom(5)*cos(pi-azep))*
+     1 (Wdoteigen_sdpth - Weigen_sdpth)))
+
+      part2=((lambda**2)*Weigen_sdpth)*
+     1 ((0.5*(fmom(2)-fmom(3))*
+     1 sin(2*(pi-azep))) -(fmom(6)*cos(2*(pi-azep))))
+
+      MEs(i)=abs(part1+part2)
+
+c      write(*,*)'======== ',Udoteigen_sdpth,fmom(1)
+c      write(*,*)(0.5*((2*Ueigen_sdpth)-(((098+0.5)**2)*Veigen_sdpth)))
+c      write(*,*)'======== ',(fmom(2)+fmom(3))
+
+c      write(*,*) 'part1 ',part1
+c      write(*,*) 'part2 ',part2
+c      write(*,*) 'part3 ',part3
+c      write(*,*) 'abs(MEs) ',abs(MEs)
+      enddo
+
+c------ write final file output Love
+
+      write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
+     1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
+     1 lmaxin,".txt"
+
+      open(1,file=path1,status='unknown',access='sequential',
+     1  position='append')
+      do i=1,360
+       azep_i(i)=i*pi/180.
+       azep=azep_i(i)
+       write(1,*) (pi-azep)*180/pi, abs(MEs(i))*1000
+      enddo
+      close(1)
+
+      endif
 
       end program
