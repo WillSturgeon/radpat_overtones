@@ -1224,7 +1224,7 @@ c------ write final file output Rayleigh
 
       write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
      1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
-     1 lmaxin,".txt"
+     1 lmaxin,"_Rayleigh.txt"
 
       open(1,file=path1,status='unknown',access='sequential',
      1  position='append')
@@ -1246,7 +1246,7 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
 
       part1=-cmplx(0,((lambda)*
      1 ((fmom(4)*sin(pi-azep))-(fmom(5)*cos(pi-azep))*
-     1 (Wdoteigen_sdpth - Weigen_sdpth)))
+     1 (Wdoteigen_sdpth - Weigen_sdpth))))
 
       part2=((lambda**2)*Weigen_sdpth)*
      1 ((0.5*(fmom(2)-fmom(3))*
@@ -1268,7 +1268,7 @@ c------ write final file output Love
 
       write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
      1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
-     1 lmaxin,".txt"
+     1 lmaxin,"_Love.txt"
 
       open(1,file=path1,status='unknown',access='sequential',
      1  position='append')
