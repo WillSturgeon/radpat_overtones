@@ -148,6 +148,8 @@ c First, make sure the right number of inputs have been provided
       CALL GET_COMMAND_ARGUMENT(6,azep_inarg)
       CALL GET_COMMAND_ARGUMENT(7,outdir)
 
+      write(*,*)'hello'
+
       read(jcominarg,*)jcomin
       read(nmaxinarg,*)nmaxin
       read(lmaxinarg,*)lmaxin
