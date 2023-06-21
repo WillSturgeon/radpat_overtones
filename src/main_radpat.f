@@ -63,7 +63,8 @@ c---- declarations for rad_pat
       real*4 part1,part3,part3_az
       dimension fmom(6),azep_i(360)
       integer alpha_rp
-      complex part2,MEs(360),part2_az,MEs_az
+      complex part2,MEs(360),part2_az,MEs_az,MEs_azepin
+      complex MEs_azepin_plus1,MEs_azepin_minus1
       real*8 X(40),Y(40),U,V,B(40),C(40),D(40)
       real*8 Ueigen_sdpth,Udoteigen_sdpth,Veigen_sdpth,Vdoteigen_sdpth
       real*8 Weigen_sdpth,Wdoteigen_sdpth
@@ -86,7 +87,7 @@ c---- declarations for model inputs etc
       real*4          moho, mineos_moho
 c      real*4          vs(maxlayer)
       real*8          radius(300)
-      character*256   path1,modelin
+      character*256   path1,modelin,path2
 
 c---- declarations for GCMT catalogue 
       parameter (max_events=49526)
@@ -132,7 +133,7 @@ c      real*4 eventt(401501),network(401501),station(401501),az_earth(401501)
 
 c-------------------------------------------------------
 c-------------------- inputs ---------------------------
-c-- example: ./rapid_mineos prem_noocean 3 0 098 201709080449A 70
+c-- example: ./radpat_overtones prem_noocean 3 0 098 202201281114A 70 /data/will/rad_pat/
 c First, make sure the right number of inputs have been provided
       IF(COMMAND_ARGUMENT_COUNT().NE.7)THEN
       WRITE(*,*)'ERROR, INCORRECT N. INPUT ARGUMENTS, STOPPING'
@@ -1093,15 +1094,15 @@ c---- check is sdpth already exists in input model
       Udoteigen_sdpth=Udoteigen(j)
       Veigen_sdpth=Veigen(j)
       Vdoteigen_sdpth=Vdoteigen(j)
-      write(*,*) '1.Ueigen_sdpth ',Ueigen_sdpth
-      write(*,*) '1.Udoteigen_sdpth ',Udoteigen_sdpth
-      write(*,*) '1.Veigen_sdpth ',Veigen_sdpth
-      write(*,*) '1.Vdoteigen_sdpth ',Vdoteigen_sdpth
+c      write(*,*) '1.Ueigen_sdpth ',Ueigen_sdpth
+c      write(*,*) '1.Udoteigen_sdpth ',Udoteigen_sdpth
+c      write(*,*) '1.Veigen_sdpth ',Veigen_sdpth
+c      write(*,*) '1.Vdoteigen_sdpth ',Vdoteigen_sdpth
       elseif (jcomin==2) then
       Weigen_sdpth=Weigen(j)
       Wdoteigen_sdpth=Wdoteigen(j)
-      write(*,*) '1.Weigen_sdpth ',Weigen_sdpth
-      write(*,*) '1.Wdoteigen_sdpth ',Wdoteigen_sdpth
+c      write(*,*) '1.Weigen_sdpth ',Weigen_sdpth
+c      write(*,*) '1.Wdoteigen_sdpth ',Wdoteigen_sdpth
       endif
       goto 11
       else
@@ -1138,10 +1139,10 @@ c        write(*,*) (prrad(i)), 6371000-(sdpth*1000)
      1 *((6371000-(sdpth*1000))-prrad(nlines))))/
      1 (prrad(nlines+1)-prrad(nlines))
 
-      write(*,*)'2.Ueigen_spdth ',Ueigen_sdpth
-      write(*,*)'2.Udoteigen_spdth ',Udoteigen_sdpth
-      write(*,*)'2.Veigen_spdth ',Veigen_sdpth
-      write(*,*)'2.Vdoteigen_spdth ',Vdoteigen_sdpth
+c      write(*,*)'2.Ueigen_spdth ',Ueigen_sdpth
+c      write(*,*)'2.Udoteigen_spdth ',Udoteigen_sdpth
+c      write(*,*)'2.Veigen_spdth ',Veigen_sdpth
+c      write(*,*)'2.Vdoteigen_spdth ',Vdoteigen_sdpth
       
       elseif (jcomin==2) then
         Weigen_sdpth=(Weigen(nlines)*(prrad(nlines+1)
@@ -1154,8 +1155,8 @@ c        write(*,*) (prrad(i)), 6371000-(sdpth*1000)
      1 *((6371000-(sdpth*1000))-prrad(nlines))))/
      1 (prrad(nlines+1)-prrad(nlines))
 
-      write(*,*)'2.Weigen_spdth ',Weigen_sdpth
-      write(*,*)'2.Wdoteigen_spdth ',Wdoteigen_sdpth
+c      write(*,*)'2.Weigen_spdth ',Weigen_sdpth
+c      write(*,*)'2.Wdoteigen_spdth ',Wdoteigen_sdpth
       endif
 
    11 continue
@@ -1168,9 +1169,10 @@ c        write(*,*) (prrad(i)), 6371000-(sdpth*1000)
 C Moment tensor components !why -30???? ask Ana.
       do i=1,6
       fmom(i)=xm(i)*(10.0**(exponentx-30)) 
-      write(*,*) 'Ms ',fmom(i)
+c      write(*,*) 'Ms ',fmom(i)
       enddo
 
+c------------ Rayleigh waves
 c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
       if (jcomin==3) then
       do i=1,360
@@ -1192,6 +1194,12 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
 
       MEs(i)=abs(part1+part2+part3)
 
+      azep_inx=azep_in*(pi/180)
+
+       MEs_azepin=MEs(azep_in)
+       MEs_azepin_plus1=MEs(azep_in+1)
+       MEs_azepin_minus1=MEs(azep_in-1)
+
 c      write(*,*)'======== ',Udoteigen_sdpth,fmom(1)
 c      write(*,*)(0.5*((2*Ueigen_sdpth)-(((098+0.5)**2)*Veigen_sdpth)))
 c      write(*,*)'======== ',(fmom(2)+fmom(3))
@@ -1201,24 +1209,6 @@ c      write(*,*) 'part2 ',part2
 c      write(*,*) 'part3 ',part3
 c      write(*,*) 'abs(MEs) ',abs(MEs)
       enddo
-
-c------- for the azimuth from source to receiver 
-      azep_in=azep_in*(pi/180)
-
-      part2_az=-cmplx(0,(lambda*((fmom(4)*cos(pi-azep_in))
-     1 +(fmom(5)*sin(pi-azep_in)))))*
-     1 (Vdoteigen_sdpth+(Ueigen_sdpth-Veigen_sdpth))
-
-      part3_az=((lambda**2)*Veigen_sdpth)*
-     1 ((0.5*(fmom(2)-fmom(3))*
-     1 cos(2*(pi-azep_in))) +(fmom(6)*sin(2*(pi-azep_in))))
-
-      MEs_az=abs(part1+part2_az+part3_az)
-
-      write(*,*)'part1',part1
-      write(*,*) 'part2_az ',part2_az
-      write(*,*) 'part3_az ',part3_az
-      write(*,*) 'MEs_az ',abs(MEs_az)
 
 c------ write final file output Rayleigh
 
@@ -1231,7 +1221,10 @@ c------ write final file output Rayleigh
       do i=1,360
        azep_i(i)=i*pi/180.
        azep=azep_i(i)
-       write(1,*) (pi-azep)*180/pi, abs(MEs(i))*1000
+
+c --- this was (pi-azep)*180/pi - not sure why exactly
+       write(1,*) azep*(180/pi), abs(MEs(i))*1000 
+
       enddo
       close(1)
 
@@ -1254,9 +1247,9 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
 
       MEs(i)=abs(part1+part2)
 
-c      write(*,*)'======== ',Udoteigen_sdpth,fmom(1)
-c      write(*,*)(0.5*((2*Ueigen_sdpth)-(((098+0.5)**2)*Veigen_sdpth)))
-c      write(*,*)'======== ',(fmom(2)+fmom(3))
+       MEs_azepin=MEs(azep_in)
+       MEs_azepin_plus1=MEs(azep_in+1)
+       MEs_azepin_minus1=MEs(azep_in-1)
 
 c      write(*,*) 'part1 ',part1
 c      write(*,*) 'part2 ',part2
@@ -1266,18 +1259,19 @@ c      write(*,*) 'abs(MEs) ',abs(MEs)
 
 c------ write final file output Love
 
-      write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
+      write(path2,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
      1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
      1 lmaxin,"_Love.txt"
 
-      open(1,file=path1,status='unknown',access='sequential',
+      open(2,file=path2,status='unknown',access='sequential',
      1  position='append')
       do i=1,360
        azep_i(i)=i*pi/180.
        azep=azep_i(i)
-       write(1,*) (pi-azep)*180/pi, abs(MEs(i))*1000
+c ---- was (pi-azep)*180/pi, not sure why 
+       write(2,*) azep*(180/pi), abs(MEs(i))*1000
       enddo
-      close(1)
+      close(2)
 
       endif
 
