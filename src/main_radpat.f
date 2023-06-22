@@ -168,23 +168,23 @@ c First, make sure the right number of inputs have been provided
       read(lmaxinarg,*)lmaxin
       read(azep_inarg,*)azep_in
 
-      write(*,*)'input model = ',input_model
-      write(*,*)'jcom = ',jcomin
-      write(*,*)'nmax= ',nmaxin
-      write(*,*)'lmax = ',lmaxin
-      write(*,*)'evnam = ',evnam
-      write(*,*)'input azimuth = ',azep_in
-      write(*,*)'output directory =',outdir
-      write(*,*)'station = ',station
-      write(*,*)'net = ',net
-      write(*,*)'stlat = ',stlat
-      write(*,*)'stlon = ',stlon
-      write(*,*)'evlat = ',evlat
-      write(*,*)'evlon = ',evlon
-      write(*,*)'A/A0 = ',Ampfl
-      write(*,*)'error = ',error
-      write(*,*)'mima =',mima
-      write(*,*)'nsim = ',nsim
+c      write(*,*)'input model = ',input_model
+c      write(*,*)'jcom = ',jcomin
+c      write(*,*)'nmax= ',nmaxin
+c      write(*,*)'lmax = ',lmaxin
+c      write(*,*)'evnam = ',evnam
+c      write(*,*)'input azimuth = ',azep_in
+c      write(*,*)'output directory =',outdir
+c      write(*,*)'station = ',station
+c      write(*,*)'net = ',net
+c      write(*,*)'stlat = ',stlat
+c      write(*,*)'stlon = ',stlon
+c      write(*,*)'evlat = ',evlat
+c      write(*,*)'evlon = ',evlon
+c      write(*,*)'A/A0 = ',Ampfl
+c      write(*,*)'error = ',error
+c      write(*,*)'mima =',mima
+c      write(*,*)'nsim = ',nsim
       
 c-----  load input model
 
@@ -1237,20 +1237,6 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
 
       MEs(i)=abs(part1+part2+part3)
 
-c      azep_inx=azep_in*(pi/180)
-
-c       write(*,*) '------in ',abs(MEs_azepin)
-c       write(*,*) '------ +1 ',abs(MEs_azepin_plus1)
-c       write(*,*) '------ -1',abs(MEs_azepin_minus1)
-
-c      write(*,*)'======== ',Udoteigen_sdpth,fmom(1)
-c      write(*,*)(0.5*((2*Ueigen_sdpth)-(((098+0.5)**2)*Veigen_sdpth)))
-c      write(*,*)'======== ',(fmom(2)+fmom(3))
-
-c      write(*,*) 'part1 ',part1
-c      write(*,*) 'part2 ',part2
-c      write(*,*) 'part3 ',part3
-c      write(*,*) 'abs(MEs) ',abs(MEs)
       enddo
 
        MEs_azepin=MEs(azep_inx)
@@ -1306,15 +1292,6 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
      1 sin(2*(pi-azep))) -(fmom(6)*cos(2*(pi-azep))))
 
       MEs(i)=abs(part1+part2)
-
-c       MEs_azepin=MEs(azep_in)
-c       MEs_azepin_plus1=MEs(azep_in+1)
-c       MEs_azepin_minus1=MEs(azep_in-1)
-
-c      write(*,*) 'part1 ',part1
-c      write(*,*) 'part2 ',part2
-c      write(*,*) 'part3 ',part3
-c      write(*,*) 'abs(MEs) ',abs(MEs)
       enddo
 
        MEs_azepin=MEs(azep_inx)
