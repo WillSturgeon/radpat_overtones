@@ -87,11 +87,11 @@ c---- declarations for model inputs etc
       real*4          moho, mineos_moho
 c      real*4          vs(maxlayer)
       real*8          radius(300)
-      character*256   path1,modelin,path2
+      character*256   path1,modelin,path2,path3,path4
 
 c---- declarations for GCMT catalogue 
       parameter (max_events=49526)
-      character*16 evnam
+      character*16 evnam,evnam2
       character*4 hypo(max_events)
       character*10 refdat(max_events)
       character*10 reftime(max_events)
@@ -130,12 +130,16 @@ c      real*4 eventt(401501),network(401501),station(401501),az_earth(401501)
       character*3 lmaxinarg
       character*10 azep_inarg
       real*8 azep_in
+      character*4 station
+      character*2 net
+      character*10 evlat,evlon,stlat,stlon,Ampfl,error,mima,nsim
+      integer azep_inx,linecount
 
 c-------------------------------------------------------
 c-------------------- inputs ---------------------------
 c-- example: ./radpat_overtones prem_noocean 3 0 098 202201281114A 70 /data/will/rad_pat/
 c First, make sure the right number of inputs have been provided
-      IF(COMMAND_ARGUMENT_COUNT().NE.7)THEN
+      IF(COMMAND_ARGUMENT_COUNT().NE.18)THEN
       WRITE(*,*)'ERROR, INCORRECT N. INPUT ARGUMENTS, STOPPING'
       STOP
       ENDIF
@@ -147,8 +151,17 @@ c First, make sure the right number of inputs have been provided
       CALL GET_COMMAND_ARGUMENT(5,evnam)
       CALL GET_COMMAND_ARGUMENT(6,azep_inarg)
       CALL GET_COMMAND_ARGUMENT(7,outdir)
-
-      write(*,*)'hello'
+      CALL GET_COMMAND_ARGUMENT(8,evnam2)
+      CALL GET_COMMAND_ARGUMENT(9,station)
+      CALL GET_COMMAND_ARGUMENT(10,net)
+      CALL GET_COMMAND_ARGUMENT(11,stlat)
+      CALL GET_COMMAND_ARGUMENT(12,stlon)
+      CALL GET_COMMAND_ARGUMENT(13,evlat)
+      CALL GET_COMMAND_ARGUMENT(14,evlon)
+      CALL GET_COMMAND_ARGUMENT(15,Ampfl)
+      CALL GET_COMMAND_ARGUMENT(16,error)
+      CALL GET_COMMAND_ARGUMENT(17,mima)
+      CALL GET_COMMAND_ARGUMENT(18,nsim)
 
       read(jcominarg,*)jcomin
       read(nmaxinarg,*)nmaxin
@@ -162,21 +175,47 @@ c First, make sure the right number of inputs have been provided
       write(*,*)'evnam = ',evnam
       write(*,*)'input azimuth = ',azep_in
       write(*,*)'output directory =',outdir
-
+      write(*,*)'station = ',station
+      write(*,*)'net = ',net
+      write(*,*)'stlat = ',stlat
+      write(*,*)'stlon = ',stlon
+      write(*,*)'evlat = ',evlat
+      write(*,*)'evlon = ',evlon
+      write(*,*)'A/A0 = ',Ampfl
+      write(*,*)'error = ',error
+      write(*,*)'mima =',mima
+      write(*,*)'nsim = ',nsim
+      
 c-----  load input model
 
-      model_file=trim('../models/'//trim(input_model)//'.txt')
+      model_file=trim('../models/'//trim(input_model))
       modelin=trim(input_model)
+
+      linecount=0
 
       open(112,file=model_file,status="old",access="sequential")
       read(112,'(a)') premstr
       read(112,*) premifanis, premtref, premifdeck
       read(112,*) premnm, premnic, premnoc   
-          do i=1,premnm
+          do i=1,premnm 
+          linecount=linecount+1
           read(112,201)prrad(i),prrho(i),prvpv(i),prvsv(i),
      1 prqka(i),prqmu(i),prvph(i),prvsh(i),preta(i)
           end do
       close(112)
+
+        premnm=linecount
+
+      open(112,file=model_file,status="old",access="sequential")
+      read(112,'(a)') premstr
+      read(112,*) premifanis, premtref, premifdeck
+      read(112,*) premnm, premnic, premnoc   
+          do i=1,premnm 
+          read(112,201)prrad(i),prrho(i),prvpv(i),prvsv(i),
+     1 prqka(i),prqmu(i),prvph(i),prvsh(i),preta(i)
+          end do
+      close(112)
+
   201 format(f8.0,3f9.2,2f9.1,2f9.2,f9.5)
 c-----------------------------------------------------------------------
 c------------------------- input parameters ----------------------------
@@ -1121,6 +1160,7 @@ c        write(*,*) (prrad(i)), 6371000-(sdpth*1000)
       enddo
 
       if (jcomin==3) then
+
        Ueigen_sdpth=(Ueigen(nlines)*(prrad(nlines+1)
      1 -(6371000-(sdpth*1000)))+(Ueigen(nlines+1)
      1 *((6371000-(sdpth*1000))-prrad(nlines))))/
@@ -1145,7 +1185,7 @@ c      write(*,*)'2.Ueigen_spdth ',Ueigen_sdpth
 c      write(*,*)'2.Udoteigen_spdth ',Udoteigen_sdpth
 c      write(*,*)'2.Veigen_spdth ',Veigen_sdpth
 c      write(*,*)'2.Vdoteigen_spdth ',Vdoteigen_sdpth
-      
+
       elseif (jcomin==2) then
         Weigen_sdpth=(Weigen(nlines)*(prrad(nlines+1)
      1 -(6371000-(sdpth*1000)))+(Weigen(nlines+1)
@@ -1177,6 +1217,7 @@ c      write(*,*) 'Ms ',fmom(i)
 c------------ Rayleigh waves
 c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
       if (jcomin==3) then
+      azep_inx=NINT(azep_in)
       do i=1,360
 
       azep_i(i)=i*pi/180.
@@ -1196,11 +1237,11 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
 
       MEs(i)=abs(part1+part2+part3)
 
-      azep_inx=azep_in*(pi/180)
+c      azep_inx=azep_in*(pi/180)
 
-       MEs_azepin=MEs(azep_in)
-       MEs_azepin_plus1=MEs(azep_in+1)
-       MEs_azepin_minus1=MEs(azep_in-1)
+c       write(*,*) '------in ',abs(MEs_azepin)
+c       write(*,*) '------ +1 ',abs(MEs_azepin_plus1)
+c       write(*,*) '------ -1',abs(MEs_azepin_minus1)
 
 c      write(*,*)'======== ',Udoteigen_sdpth,fmom(1)
 c      write(*,*)(0.5*((2*Ueigen_sdpth)-(((098+0.5)**2)*Veigen_sdpth)))
@@ -1212,29 +1253,46 @@ c      write(*,*) 'part3 ',part3
 c      write(*,*) 'abs(MEs) ',abs(MEs)
       enddo
 
+       MEs_azepin=MEs(azep_inx)
+       MEs_azepin_plus1=MEs(azep_inx+1)
+       MEs_azepin_minus1=MEs(azep_inx-1)
+
 c------ write final file output Rayleigh
 
-      write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
-     1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
-     1 lmaxin,"_Rayleigh.txt"
+c      write(path1,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
+c     1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
+c     1 lmaxin,"_Rayleigh.txt"
 
-      open(1,file=path1,status='unknown',access='sequential',
-     1  position='append')
-      do i=1,360
-       azep_i(i)=i*pi/180.
-       azep=azep_i(i)
+c      open(1,file=path1,status='unknown',access='sequential',
+c     1  position='append')
+c      do i=1,360
+c       azep_i(i)=i*pi/180.
+c       azep=azep_i(i)
 
 c --- this was (pi-azep)*180/pi - not sure why exactly
-       write(1,*) azep*(180/pi), abs(MEs(i))*1000 
+c       write(1,*) azep*(180/pi), abs(MEs(i))*1000 
 
-      enddo
-      close(1)
+c      enddo
+c      close(1)
+
+      write(path3,'(A,I1.1,A,I3.3,A)') trim(outdir),
+     1 nmaxin,"S",lmaxin,"_nodality.txt"
+
+      open(3,file=path3,status='unknown',access='sequential',
+     1  position='append')
+       write(3,*)azep_inx,abs(MEs_azepin)*1000,
+     1 abs(MEs_azepin_plus1)*1000,
+     1 abs(MEs_azepin_minus1)*1000,
+     1 station,net,stlat,stlon,evlat,evlon,
+     1 Ampfl,error,mima,nsim
+      close(3)
 
       elseif (jcomin==2) then
 
 c --------- for Love waves
 c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
       do i=1,360
+      azep_inx=NINT(azep_in)
 
       azep_i(i)=i*pi/180.
       azep=azep_i(i)
@@ -1249,9 +1307,9 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
 
       MEs(i)=abs(part1+part2)
 
-       MEs_azepin=MEs(azep_in)
-       MEs_azepin_plus1=MEs(azep_in+1)
-       MEs_azepin_minus1=MEs(azep_in-1)
+c       MEs_azepin=MEs(azep_in)
+c       MEs_azepin_plus1=MEs(azep_in+1)
+c       MEs_azepin_minus1=MEs(azep_in-1)
 
 c      write(*,*) 'part1 ',part1
 c      write(*,*) 'part2 ',part2
@@ -1259,21 +1317,37 @@ c      write(*,*) 'part3 ',part3
 c      write(*,*) 'abs(MEs) ',abs(MEs)
       enddo
 
+       MEs_azepin=MEs(azep_inx)
+       MEs_azepin_plus1=MEs(azep_inx+1)
+       MEs_azepin_minus1=MEs(azep_inx-1)
+
 c------ write final file output Love
 
-      write(path2,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
-     1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
-     1 lmaxin,"_Love.txt"
+c      write(path2,'(A,A,A,A,A,I1.1,A,I3.3,A)') trim(outdir),
+c     1 trim(evnam),"_",trim(input_model),"_n",nmaxin,"_l",
+c     1 lmaxin,"_Love.txt"
 
-      open(2,file=path2,status='unknown',access='sequential',
+c      open(2,file=path2,status='unknown',access='sequential',
+c     1  position='append')
+c      do i=1,360
+c       azep_i(i)=i*pi/180.
+c       azep=azep_i(i)
+cc ---- was (pi-azep)*180/pi, not sure why 
+c       write(2,*) azep*(180/pi), abs(MEs(i))*1000
+c      enddo
+c      close(2)
+
+      write(path4,'(A,I1.1,A,I3.3,A)') trim(outdir),
+     1 nmaxin,"T",lmaxin,"_nodality.txt"
+
+      open(4,file=path4,status='unknown',access='sequential',
      1  position='append')
-      do i=1,360
-       azep_i(i)=i*pi/180.
-       azep=azep_i(i)
-c ---- was (pi-azep)*180/pi, not sure why 
-       write(2,*) azep*(180/pi), abs(MEs(i))*1000
-      enddo
-      close(2)
+       write(4,*)azep_inx,abs(MEs_azepin)*1000,
+     1 abs(MEs_azepin_plus1)*1000,
+     1 abs(MEs_azepin_minus1)*1000,
+     1 station,net,stlat,stlon,evlat,evlon,
+     1 Ampfl,error,mima,nsim
+      close(4)
 
       endif
 
