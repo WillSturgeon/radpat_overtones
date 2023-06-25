@@ -130,8 +130,8 @@ c      real*4 eventt(401501),network(401501),station(401501),az_earth(401501)
       character*3 lmaxinarg
       character*10 azep_inarg
       real*8 azep_in
-      character*4 station
-      character*2 net
+      character*6 station
+      character*4 net
       character*10 evlat,evlon,stlat,stlon,Ampfl,error,mima,nsim
       integer azep_inx,linecount
 
@@ -305,7 +305,7 @@ c      write(*,*) "start of loop CMTname(i) ",CMTname(i)," ndkdata(i) ",ndkdata(
 
         if (trim(evnam).eq.trim(CMTname(i))) then 
         j=i
-        write(*,*) 'condition found - exit'
+c        write(*,*) 'condition found - exit'
         evnam=CMTname(j)
         foundevent=.true.
         exit
@@ -1091,9 +1091,9 @@ c-------------------------------------------------------------------------------
       xm(6)=Mtp(j)
 c the order is Mrr, Mtt, Mpp, Mrt, Mrp, Mtp
 
-      write(*,*) 'evnam new ',evnam
-      write(*,*) 'source depth ',sdpth
-      write(*,*)'exponent ',exponentx
+c      write(*,*) 'evnam new ',evnam
+c      write(*,*) 'source depth ',sdpth
+c      write(*,*)'exponent ',exponentx
 
 c eigenfunctions at the surface - will need to change this to the correct source depth
 c I had to multiply by -1 so that is matches the modes in the mode files....
@@ -1129,7 +1129,7 @@ c      write(*,*) i,'radius duplicate'
 c---- check is sdpth already exists in input model
       do j=1,premnm
       if (6371000-(sdpth*1000) == prrad(j)) then
-      write(*,*) 'source depth exists in input model'
+c      write(*,*) 'source depth exists in input model'
       if (jcomin==3) then 
       Ueigen_sdpth=Ueigen(j)
       Udoteigen_sdpth=Udoteigen(j)
@@ -1242,6 +1242,10 @@ c M:Es* (MEs) - Table A1 - Ferreira & Woodhouse 2006.
        MEs_azepin=MEs(azep_inx)
        MEs_azepin_plus1=MEs(azep_inx+1)
        MEs_azepin_minus1=MEs(azep_inx-1)
+
+c       write(*,*)'MEs in ',abs(MEs_azepin)
+c       write(*,*)'MEs in+1 ',abs(MEs_azepin_plus1)
+c       write(*,*)'MEs in-1 ',abs(MEs_azepin_minus1)
 
 c------ write final file output Rayleigh
 
